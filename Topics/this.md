@@ -8,7 +8,7 @@
 
 let us consider the following code
 
-`
+```
 function func(){
 
 	this.count++;
@@ -21,6 +21,6 @@ for(int i = 0;i<10;i++)
 	func();
 
 console.log(func.count) // Prints '0'
-`
+```
 
 We know that functions in javascript are objects, but common misconception is that 'this' referes to function itself.
