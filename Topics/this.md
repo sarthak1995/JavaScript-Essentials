@@ -76,7 +76,7 @@ When a function is invoked or called, an activation record is created which cont
 
 ## Guidlines of Bindings
 
-### Default 
+### Default Binding
 
 Consider following scenario : 
 
@@ -87,21 +87,19 @@ function func(){
 
 var count = 5;
 
-func()
+func(); // 5
 
 ```
 
 When we examine the call site of our function _func_, we see that it is invoked with plain, without any decorated function references. Hence, 'this' resloves to our global object.
 
-### Implicit
+### Implicit Binding
 
 Binding is said to be impplicit if the call-site has an object context.
 
 ```
 function func1(){
-
 	console.log(this.val);
-
 }
 
 var obj = {
@@ -119,9 +117,7 @@ But the above implicity mai be lost in some scenarios, and _default_  binding ca
 
 ```
 function func1(){
-
 	console.log(this.val);
-
 }
 
 var obj = {
@@ -147,7 +143,7 @@ function setTimeout(func,timeDelay){
 
 ```
 
-### Explicit
+### Explicit Binding
 
 Explicit binding is done if you want to force a function call to use a particular object for 'this' bindiing without putting a property refernce on the object as done in implicit binding.
 
@@ -157,9 +153,7 @@ Both the utilites take first parameter as an object that should be use for 'this
 
 ```
 function func1(){
-
 	console.log(this.val);
-
 }
 
 var obj = {
@@ -171,14 +165,14 @@ func1.call(obj);
 
 ```
 
+### Hard Binding
+
 There are some cases in which explicit binding doesn't offer any help. Consider the following code : 
 
 
 ```
 function func1(){
-
 	console.log(this.val);
-
 }
 
 var obj1 = {
@@ -194,6 +188,87 @@ obj2 = {
 }
 
 func2() // 5
+
+// func2's can not have its 'this' overridden
 func2.call(obj2); // 5
 
 ```
+
+Hence a reusable helper function can be created to solve the above scenario.
+```
+function func1(){
+	console.log(this.val);
+}
+
+var obj1 = {
+	val : 5,
+}
+
+var obj2 = {
+	val : 10,
+}
+
+function bind(fn,obj){
+	return function(){
+		fn.apply(obj,arguments);
+	}
+}
+
+var func2 = bind(func1,obj2);
+
+func2();
+```
+
+
+We can also use the utiliy provided by JavaScript functions itself , called _bind(...)_
+
+
+```
+function func1(){
+	console.log(this.val);
+}
+
+var obj1 = {
+	val : 5,
+}
+
+var obj2 = {
+	val : 10,
+}
+
+function bind(fn,obj){
+	return function(){
+		fn.apply(obj,arguments);
+	}
+}
+
+var func2 = func1.bind(obj2);
+
+func2();
+```
+
+_bind()_ returns a new function that calls the original function with 'this' context set by you.
+
+
+### new Binding
+
+Whenever a function is invoked with _new_ in front of it, A new object (constructor) is created, it is prototyped linked, it is set as 'this' binding for function call and it is returned unless some other object is returned by the function.
+
+```
+function Car(){
+	this.wheels = 4;
+}
+
+var honda = new Car();
+console.log(honda.wheels); // 4
+```
+
+
+## THIS and the Order Of Bindings
+
+The above guidelines can be applied to the call site in the following order : 
+
+1. If called with **new**, Use newly constructed object.
+2. If called with call/apply/bind utility functions, use the specified object.
+3. If called with a context object owning the call, use that object for context.
+4. Else use Default or global object
